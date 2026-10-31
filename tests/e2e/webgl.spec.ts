@@ -19,3 +19,14 @@ test('hero and chamber scenes render without errors', async ({ page }) => {
   await page.waitForTimeout(1500);
   expect(problems).toEqual([]);
 });
+
+test('a device too slow for 3D falls back quickly and stays usable', async ({ page }) => {
+  test.setTimeout(60_000);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 8 });
+  await page.goto('./');
+  await expect(page.getByTestId('hero-canvas')).toHaveCount(0, { timeout: 30_000 });
+  await expect(page.getByTestId('fallback-world')).toBeVisible();
+  await page.getByTestId('armor-stage').first().click({ timeout: 10_000 });
+  await expect(page.getByText('Recruit Rig')).toBeVisible();
+});

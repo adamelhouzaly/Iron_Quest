@@ -325,28 +325,32 @@ export class Stage {
     if (this.rayMat) this.rayMat.opacity = 0.03 + this.cur.gate * 0.12;
     for (const f of this.fog) { f.s.position.x += f.v * dt; if (f.s.position.x > 13) f.s.position.x = -13; if (f.s.position.x < -13) f.s.position.x = 13; }
     if (this.composer) this.composer.render(dt); else this.renderer.render(this.scene, this.camera);
-    this.watchPerformance(t);
+    this.watchPerformance(now);
   };
 
-  /** Adaptive quality: drop bloom, then resolution, then hand back to the drawn fallback. */
-  private watchPerformance(t: number) {
+  /**
+   * Adaptive quality: drop bloom, then resolution, then hand back to the drawn fallback.
+   * Measured in real time: animation time is capped per frame, which would hide very slow devices.
+   */
+  private watchPerformance(now: number) {
     this.frames++;
-    if (t - this.fpsAt < 2.5) return;
-    const fps = this.frames / (t - this.fpsAt);
-    this.frames = 0; this.fpsAt = t;
+    const span = now - this.fpsAt;
+    if (span < 2) return;
+    const fps = this.frames / span;
+    this.frames = 0; this.fpsAt = now;
     if (fps >= 26) { this.slowStrikes = 0; return; }
-    this.slowStrikes++;
     if (localStorage.getItem('iq.keep3d')) return; // Screenshot tooling on GPU-less machines.
-    if (this.slowStrikes === 1 && this.composer) { this.composer.dispose(); this.composer = undefined; }
-    else if (this.slowStrikes === 2 && this.dpr > 1) { this.dpr = 1; this.renderer.setPixelRatio(1); this.resize(); }
-    else if (this.slowStrikes >= 4) this.opts.onSlow?.();
+    this.slowStrikes += fps < 10 ? 2 : 1; // Barely moving: don't make people wait through every step.
+    if (this.composer) { this.composer.dispose(); this.composer = undefined; }
+    if (this.slowStrikes >= 2 && this.dpr > 1) { this.dpr = 1; this.renderer.setPixelRatio(1); this.resize(); }
+    if (this.slowStrikes >= 4) this.opts.onSlow?.();
   }
 
   private sync = () => {
     const should = this.visible && document.visibilityState === 'visible' && !this.disposed;
     if (should === this.running) return;
     this.running = should;
-    if (should) { this.lastT = performance.now() / 1000; this.frames = 0; this.fpsAt = this.elapsed; this.loop(); } else cancelAnimationFrame(this.raf);
+    if (should) { this.lastT = this.fpsAt = performance.now() / 1000; this.frames = 0; this.loop(); } else cancelAnimationFrame(this.raf);
   };
 
   resize() {
