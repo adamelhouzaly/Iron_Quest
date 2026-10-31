@@ -22,17 +22,20 @@ function FallbackWorld({ scrollRef, reduced }: { scrollRef: React.RefObject<numb
   useEffect(() => {
     if (reduced) return;
     let raf = 0; let px = 0;
-    const onMove = (e: PointerEvent) => { px = (e.clientX / innerWidth) * 2 - 1; };
-    addEventListener('pointermove', onMove, { passive: true });
-    const tick = () => {
+    // Paint only when something moved. An idle page should cost nothing on a weak device.
+    const paint = () => {
+      raf = 0;
       const s = scrollRef.current ?? 0;
       if (warrior.current) warrior.current.style.transform = `translate3d(${px * -10}px, ${s * -60}px, 0) scale(${1 + s * 0.18})`;
       if (far.current) far.current.style.transform = `translate3d(${px * -24}px, ${s * -30}px, 0)`;
       if (fog.current) fog.current.style.transform = `translate3d(${px * 18}px, ${s * -120}px, 0)`;
-      raf = requestAnimationFrame(tick);
     };
-    tick();
-    return () => { cancelAnimationFrame(raf); removeEventListener('pointermove', onMove); };
+    const request = () => { raf ||= requestAnimationFrame(paint); };
+    const onMove = (e: PointerEvent) => { px = (e.clientX / innerWidth) * 2 - 1; request(); };
+    addEventListener('pointermove', onMove, { passive: true });
+    addEventListener('scroll', request, { passive: true });
+    request();
+    return () => { cancelAnimationFrame(raf); removeEventListener('pointermove', onMove); removeEventListener('scroll', request); };
   }, [reduced, scrollRef]);
   return (
     <div aria-hidden className="absolute inset-0 overflow-hidden" data-testid="fallback-world">
