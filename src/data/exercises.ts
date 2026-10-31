@@ -1,5 +1,6 @@
 import type { Category, Equipment, Exercise, Muscle, TrackingMode } from '@/domain/types';
 import { slug } from '@/domain/util';
+import { EXTENDED } from './exercises-extended';
 
 /**
  * Curated library, written for Iron Quest. To extend it, add one `x(...)` row: ids are derived
@@ -9,7 +10,7 @@ import { slug } from '@/domain/util';
 const x = (name: string, primary: Muscle[], secondary: Muscle[], equipment: Equipment, category: Category, mode: TrackingMode, steps: string[], form: string[]): Exercise =>
   ({ id: slug(name), name, primary, secondary, equipment, category, mode, steps, form });
 
-export const EXERCISES: Exercise[] = [
+const CORE: Exercise[] = [
   // ---------- CHEST ----------
   x('Barbell Bench Press', ['chest'], ['triceps', 'front-delts'], 'barbell', 'push', 'strength', ['Lie with eyes under the bar, feet planted, shoulder blades pinched down and back.', 'Unrack and lower the bar under control to the lower chest.', 'Press up and slightly back until the elbows are straight.'], ['Keep wrists stacked over elbows.', 'Elbows about 45–70° from the torso, not flared to 90°.', 'Use a spotter or safety pins when training near failure.']),
   x('Incline Barbell Bench Press', ['chest'], ['front-delts', 'triceps'], 'barbell', 'push', 'strength', ['Set the bench to about 30°. Retract your shoulder blades and unrack.', 'Lower to the upper chest.', 'Press straight up over the shoulders.'], ['Keep hips on the bench.', 'A steeper angle shifts work to the shoulders.']),
@@ -131,6 +132,7 @@ export const EXERCISES: Exercise[] = [
   x('Assault Bike', ['cardio'], ['quads', 'front-delts'], 'cardio-machine', 'cardio', 'cardio', ['Set the seat and start at a moderate pace.', 'Push and pull the arms while pedalling.', 'Log your time and distance.'], ['Use it for intervals; it gets hard quickly.', 'Brace your trunk.']),
 ];
 
+export const EXERCISES: Exercise[] = [...CORE, ...EXTENDED];
 export const EXERCISE_BY_ID = new Map(EXERCISES.map((e) => [e.id, e]));
 export const EQUIPMENT_LABEL: Record<Equipment, string> = { barbell: 'Barbell', dumbbell: 'Dumbbell', cable: 'Cable', machine: 'Machine', bodyweight: 'Bodyweight', kettlebell: 'Kettlebell', band: 'Band', 'ez-bar': 'EZ bar', smith: 'Smith machine', 'trap-bar': 'Trap bar', 'cardio-machine': 'Cardio machine', none: 'No equipment', other: 'Other' };
 export const CATEGORY_LABEL: Record<Category, string> = { push: 'Push', pull: 'Pull', squat: 'Squat', hinge: 'Hinge', lunge: 'Lunge', carry: 'Carry', core: 'Core', isolation: 'Isolation', cardio: 'Cardio', calisthenics: 'Calisthenics' };

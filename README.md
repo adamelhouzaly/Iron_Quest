@@ -9,7 +9,7 @@ Free for everyone: no subscription, no limits, no paid unlocks, and no account r
 ## What's inside
 
 - **Workout logging:** blank or routine-based sessions; weight, reps, time, distance and RPE; warm-up, drop and failure sets; supersets and circuits; previous values on every row; rest timers; live PR alerts; drafts that survive a closed tab.
-- **Exercise library:** 111 curated exercises with instructions, form cues and original muscle maps, plus unlimited custom exercises.
+- **Exercise library:** 436 curated exercises with instructions, form cues and original muscle maps, plus unlimited custom exercises.
 - **Routines:** unlimited routines, folders and programs; six starter programs; training-day scheduling; share codes that need no backend.
 - **Analytics:** volume, frequency, duration, estimated 1RM, per-muscle hard sets, consistency, records, and monthly and yearly reports, all calculated from your log. Body weight, measurements, body fat and on-device progress photos.
 - **Tools:** plate, warm-up, 1RM and volume calculators; unit conversion; rule-based, always-explained progressive overload suggestions.
@@ -40,7 +40,7 @@ Requires Node 24+.
 | Path | Purpose |
 | --- | --- |
 | `src/domain/` | Pure logic with no UI: workouts, records, analytics, XP, overload rules, migration, CSV, schemas |
-| `src/data/` | Exercise library and program templates. Add an exercise with one `x(...)` row |
+| `src/data/` | Exercise library and program templates. Add an exercise with one row in `exercises-extended.ts` |
 | `src/services/` | IndexedDB, sync engine, Supabase, social, import/export, notifications |
 | `src/state/` | Zustand store and derived selectors |
 | `src/three/` | Original procedural warrior and scenes (lazy-loaded, adaptive quality) |
@@ -90,6 +90,5 @@ Strava and similar services require a registered application and a server to hol
 ## Limitations
 
 - **Notifications:** with no push server, rest-timer alerts and reminders fire only while the app is open or running as an installed app.
-- **Exercise count:** the library has 111 exercises. Lists use `content-visibility` and filtering is in memory, so it's built to handle 400+, but the extra content hasn't been written yet.
 
 Iron Quest is a training log, not medical advice.

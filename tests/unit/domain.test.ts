@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { EXERCISES, EXERCISE_BY_ID } from '@/data/exercises';
+import { CATEGORY_LABEL, EQUIPMENT_LABEL, EXERCISES, EXERCISE_BY_ID } from '@/data/exercises';
 import { PROGRAMS, instantiateProgram } from '@/data/templates';
 import { migrateV1 } from '@/domain/migration';
 import { buildRecordBook, e1rm } from '@/domain/records';
 import { computeProgress, levelFromXp, XP } from '@/domain/progression';
-import { muscleSets, streaks, totals, weeklySeries } from '@/domain/analytics';
+import { MUSCLE_LABEL, muscleSets, streaks, totals, weeklySeries } from '@/domain/analytics';
 import { recommend } from '@/domain/overload';
 import { plateBreakdown, warmupSets } from '@/domain/tools';
 import { addSet, duplicateSet, finalize, linkWithNext, moveExercise, newWorkoutExercise, removeExercise, restAfter, setProblem, unlink, workoutFromRoutine } from '@/domain/workout-ops';
@@ -24,6 +24,22 @@ describe('library', () => {
   it('has unique ids and complete instruction data', () => {
     expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(EXERCISES.length);
     for (const e of EXERCISES) { expect(e.primary.length, e.name).toBeGreaterThan(0); expect(e.steps.length, e.name).toBeGreaterThan(1); expect(e.form.length, e.name).toBeGreaterThan(0); }
+  });
+  it('has 400+ exercises with valid values, specific instructions and no near-duplicates', () => {
+    expect(EXERCISES.length).toBeGreaterThanOrEqual(400);
+    const muscles = new Set(Object.keys(MUSCLE_LABEL));
+    for (const e of EXERCISES) {
+      for (const m of [...e.primary, ...e.secondary]) expect(muscles.has(m), `${e.name}: ${m}`).toBe(true);
+      expect(EQUIPMENT_LABEL[e.equipment], `${e.name}: ${e.equipment}`).toBeTruthy();
+      expect(CATEGORY_LABEL[e.category], `${e.name}: ${e.category}`).toBeTruthy();
+      expect(e.secondary.filter((m) => e.primary.includes(m)), e.name).toEqual([]);
+      for (const line of [...e.steps, ...e.form]) expect(line.trim().length, `${e.name}: "${line}"`).toBeGreaterThan(3);
+    }
+    const key = (n: string) => n.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/s$/, '');
+    expect(new Set(EXERCISES.map((e) => key(e.name))).size).toBe(EXERCISES.length);
+    const steps = EXERCISES.map((e) => e.steps.join(' '));
+    const repeats = steps.filter((x, i) => steps.indexOf(x) !== i);
+    expect(repeats, 'copied instructions').toEqual([]);
   });
   it('contains every exercise the original app shipped', () => {
     for (const name of ['Barbell Bench Press', 'Incline Dumbbell Press', 'Overhead Press', 'Dumbbell Shoulder Press', 'Lateral Raise', 'Cable Fly', 'Triceps Pushdown', 'Overhead Triceps Extension', 'Pull-Up', 'Lat Pulldown', 'Barbell Row', 'Chest-Supported Row', 'Seated Cable Row', 'Face Pull', 'Dumbbell Curl', 'Hammer Curl', 'Barbell Squat', 'Front Squat', 'Romanian Deadlift', 'Leg Press', 'Leg Curl', 'Leg Extension', 'Standing Calf Raise', 'Seated Calf Raise', 'Hanging Leg Raise'])

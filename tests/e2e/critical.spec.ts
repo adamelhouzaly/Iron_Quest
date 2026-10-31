@@ -441,9 +441,9 @@ test.describe('features', () => {
   test('library search and filters work, detail shows guidance', async ({ page }) => {
     await enterApp(page);
     await page.goto('./#/app/exercises');
-    await page.getByTestId('ex-search').fill('romanian');
+    await page.getByTestId('ex-search').fill('nordic');
     await expect(page.getByTestId('ex-count')).toHaveText('1 shown');
-    await page.getByRole('link', { name: /Romanian Deadlift/ }).click();
+    await page.getByRole('link', { name: /Nordic Curl/ }).click();
     await expect(page.getByRole('heading', { name: 'Execution' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Form' })).toBeVisible();
     await expect(page.getByRole('img', { name: /Back view/ })).toBeVisible();
